@@ -1,6 +1,6 @@
 // started from this tutorial:
 // https://mozdevs.github.io/html5-games-workshop/en/guides/platformer/gravity/
-
+const LEVEL_COUNT = 2;
 
 function Hero(game, x, y) {
   // call Phaser.Sprite constructor
@@ -90,8 +90,9 @@ Spider.prototype.die = function() {
 PlayState = {};
 
 PlayState.preload = function() {
-  this.game.load.image('background', 'images/background.png');
+  this.game.load.json('level:0', 'data/level00.json');
   this.game.load.json('level:1', 'data/level01.json');
+  this.game.load.image('background', 'images/background.png');
   this.game.load.image('ground', 'images/ground.png');
   this.game.load.image('grass:8x1', 'images/grass_8x1.png');
   this.game.load.image('grass:6x1', 'images/grass_6x1.png');
@@ -115,7 +116,7 @@ PlayState.preload = function() {
   this.game.load.spritesheet('icon:key', 'images/key_icon.png', 34, 30);
 };
 
-PlayState.init = function() {
+PlayState.init = function(data) {
   this.game.renderer.renderSession.roundPixels = true;
   this.keys = this.game.input.keyboard.addKeys({
     left: Phaser.KeyCode.LEFT,
@@ -132,6 +133,8 @@ PlayState.init = function() {
 
   this.coinPickupCount = 0;
   this.hasKey = false;
+
+  this.level = (data.level || 0) % LEVEL_COUNT;
 };
 
 PlayState._createHud = function() {
@@ -156,7 +159,7 @@ PlayState._createHud = function() {
 
 PlayState.create = function() {
   this.game.add.image(0, 0, 'background');
-  this._loadLevel(this.game.cache.getJSON('level:1'));
+  this._loadLevel(this.game.cache.getJSON(`level:${this.level}`));
   this.sfx = {
     jump: this.game.add.audio('sfx:jump'),
     coin: this.game.add.audio('sfx:coin'),
@@ -272,7 +275,7 @@ PlayState._onHeroVsEnemy = function(hero, enemy) {
   }
   else { // game over -> restart the game
     this.sfx.stomp.play();
-    this.game.state.restart();
+    this.game.state.restart(true, false, { level: this.level });
   }
 };
 
@@ -284,8 +287,7 @@ PlayState._onHeroVsKey = function(hero, key) {
 
 PlayState._onHeroVsDoor = function(hero, door) {
   this.sfx.door.play();
-  this.game.state.restart();
-  // TODO: go to the next level instead
+  this.game.state.restart(true, false, { level: this.level + 1 });
 };
 
 PlayState._handleCollisions = function() {
@@ -312,5 +314,5 @@ PlayState.update = function() {
 window.onload = function() {
   let game = new Phaser.Game(960, 600, Phaser.AUTO, 'game');
   game.state.add('play', PlayState);
-  game.state.start('play');
+  game.state.start('play', true, false, { level: 0 });
 };
