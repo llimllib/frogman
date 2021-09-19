@@ -23,23 +23,16 @@ Hero.prototype.jump = function() {
   const JUMP_SPEED = 600;
 
   // always allow jumping
-  this.body.velocity.y = -JUMP_SPEED;
-
-  // if it's the first jump, return true to play the jump sfx
-  if (this.body.touching.down) {
-    return true;
-  } else {
-    return false;
-  }
+  // this.body.velocity.y = -JUMP_SPEED;
 
   // To remove double-jumping, uncomment this:
-  // let canJump = this.body.touching.down;
+  let canJump = this.body.touching.down;
 
-  // if (canJump) {
-  //     this.body.velocity.y = -JUMP_SPEED;
-  // }
-  //
-  // return canJump;
+  if (canJump) {
+    this.body.velocity.y = -JUMP_SPEED;
+  }
+
+  return canJump;
 };
 
 Hero.prototype.bounce = function() {
